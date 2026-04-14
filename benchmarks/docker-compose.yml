@@ -1,0 +1,254 @@
+# =============================================================================
+# Sabre Benchmarks - Docker Compose (OpenEuler ARM)
+# 全部 14 个 benchmark 容器，含 cpuset 绑核参数
+#
+# 镜像: <name>:latest（已在本地 registry 中）
+#
+# 注意: 使用 network_mode: host，所有容器共享宿主机网络栈。
+#       容器内 gRPC server 默认监听 0.0.0.0:50051。
+#       同时运行多个容器时，需为每个容器设置不同的 GRPC_PORT 环境变量，
+#       并在 server.py 中读取该变量（大多数 FunctionBench server.py 支持此方式）。
+#
+# 用法:
+#   docker compose up -d              # 启动全部
+#   docker compose up -d chameleon    # 启动单个
+#   docker compose down               # 停止全部
+#   docker compose ps                 # 查看状态
+# =============================================================================
+
+version: "3.9"
+
+x-common: &common
+  restart: "no"
+  #  network_mode: host
+  privileged: false
+  ulimits:
+    nofile:
+      soft: 65536
+      hard: 65536
+
+services:
+
+  # ── 1. chameleon ──────────────────────────────────────────────────────────
+  # HTML 模板渲染 (Chameleon module)
+  # gRPC 默认端口: 50051
+  chameleon:
+    <<: *common
+    container_name: chameleon
+    image: chameleon:latest
+    cpuset: "0"           # 绑核参数：格式 "0" | "0,2" | "0-3"
+    mem_limit: 512m
+    environment:
+      - GRPC_PORT=50051
+    ports:
+      - "50051:50051"
+    labels:
+      sabre.benchmark: "chameleon"
+
+  # ── 2. pagerank ───────────────────────────────────────────────────────────
+  # PageRank 图排名算法
+  # gRPC 默认端口: 50052
+  pagerank:
+    <<: *common
+    container_name: pagerank
+    image: pagerank:latest
+    cpuset: "0"
+    mem_limit: 512m
+    environment:
+      - GRPC_PORT=50052
+    ports:
+      - "50052:50052"
+    labels:
+      sabre.benchmark: "pagerank"
+
+  # ── 3. fibonacci ──────────────────────────────────────────────────────────
+  # 斐波那契数列（递归计算第 n 项）
+  # gRPC 默认端口: 50053
+  fibonacci:
+    <<: *common
+    container_name: fibonacci
+    image: fibonacci:latest
+    cpuset: "0"
+    mem_limit: 256m
+    environment:
+      - GRPC_PORT=50053
+    ports:
+      - "50053:50053"
+    labels:
+      sabre.benchmark: "fibonacci"
+
+  # ── 4. cnn_image_classification ───────────────────────────────────────────
+  # CNN 图像分类（ResNet / MobileNet）
+  # gRPC 默认端口: 50054
+  cnn_image_classification:
+    <<: *common
+    container_name: cnn_image_classification
+    image: cnn_image_classification:latest
+    cpuset: "0"
+    mem_limit: 1024m
+    environment:
+      - GRPC_PORT=50054
+    ports:
+      - "50054:50054"
+    labels:
+      sabre.benchmark: "cnn_image_classification"
+
+  # ── 5. bfs ────────────────────────────────────────────────────────────────
+  # 广度优先搜索（BFS）图遍历
+  # gRPC 默认端口: 50055
+  bfs:
+    <<: *common
+    container_name: bfs
+    image: bfs:latest
+    cpuset: "0"
+    mem_limit: 512m
+    environment:
+      - GRPC_PORT=50055
+    ports:
+      - "50055:50055"
+    labels:
+      sabre.benchmark: "bfs"
+
+  # ── 6. matmul ─────────────────────────────────────────────────────────────
+  # 矩阵乘法（numpy）
+  # gRPC 默认端口: 50056
+  matmul:
+    <<: *common
+    container_name: matmul
+    image: matmul:latest
+    cpuset: "0"
+    mem_limit: 512m
+    environment:
+      - GRPC_PORT=50056
+    ports:
+      - "50056:50056"
+    labels:
+      sabre.benchmark: "matmul"
+
+  # ── 7. ml_video_face_detection ────────────────────────────────────────────
+  # 视频人脸检测（OpenCV + Haar Cascade）
+  # gRPC 默认端口: 50057
+  ml_video_face_detection:
+    <<: *common
+    container_name: ml_video_face_detection
+    image: ml_video_face_detection:latest
+    cpuset: "0"
+    mem_limit: 1024m
+    environment:
+      - GRPC_PORT=50057
+    ports:
+      - "50057:50057"
+    labels:
+      sabre.benchmark: "ml_video_face_detection"
+
+  # ── 8. image_processing ───────────────────────────────────────────────────
+  # 图像处理（旋转、翻转、缩放、滤镜）
+  # gRPC 默认端口: 50058
+  image_processing:
+    <<: *common
+    container_name: image_processing
+    image: image_processing:latest
+    cpuset: "0"
+    mem_limit: 512m
+    environment:
+      - GRPC_PORT=50058
+    ports:
+      - "50058:50058"
+    labels:
+      sabre.benchmark: "image_processing"
+
+  # ── 9. model_training ─────────────────────────────────────────────────────
+  # ML 模型训练（sklearn 逻辑回归 / 随机森林）
+  # gRPC 默认端口: 50059
+  model_training:
+    <<: *common
+    container_name: model_training
+    image: model_training:latest
+    cpuset: "0"
+    mem_limit: 1024m
+    environment:
+      - GRPC_PORT=50059
+    ports:
+      - "50059:50059"
+    labels:
+      sabre.benchmark: "model_training"
+
+  # ── 10. dna_visualization ─────────────────────────────────────────────────
+  # DNA 序列可视化（碱基对统计与绘图）
+  # gRPC 默认端口: 50060
+  dna_visualization:
+    <<: *common
+    container_name: dna_visualization
+    image: dna_visualization:latest
+    cpuset: "0"
+    mem_limit: 512m
+    environment:
+      - GRPC_PORT=50060
+    ports:
+      - "50060:50060"
+    labels:
+      sabre.benchmark: "dna_visualization"
+
+  # ── 11. ml_lr_prediction ──────────────────────────────────────────────────
+  # 逻辑回归推理预测（预训练模型在线推理）
+  # gRPC 默认端口: 50061
+  ml_lr_prediction:
+    <<: *common
+    container_name: ml_lr_prediction
+    image: ml_lr_prediction:latest
+    cpuset: "0"
+    mem_limit: 512m
+    environment:
+      - GRPC_PORT=50061
+    ports:
+      - "50061:50061"
+    labels:
+      sabre.benchmark: "ml_lr_prediction"
+
+  # ── 12. video_processing ──────────────────────────────────────────────────
+  # 视频处理（灰度转换 / 帧提取）
+  # gRPC 默认端口: 50062
+  video_processing:
+    <<: *common
+    container_name: video_processing
+    image: video_processing:latest
+    cpuset: "0"
+    mem_limit: 1024m
+    environment:
+      - GRPC_PORT=50062
+    ports:
+      - "50062:50062"
+    labels:
+      sabre.benchmark: "video_processing"
+
+  # ── 13. rnn_generate_character_level ──────────────────────────────────────
+  # RNN 字符级文本生成（PyTorch）
+  # gRPC 默认端口: 50063
+  rnn_generate_character_level:
+    <<: *common
+    container_name: rnn_generate_character_level
+    image: rnn_generate_character_level:latest
+    cpuset: "0"
+    mem_limit: 1024m
+    environment:
+      - GRPC_PORT=50063
+    ports:
+      - "50063:50063"
+    labels:
+      sabre.benchmark: "rnn_generate_character_level"
+
+  # ── 14. python_list ───────────────────────────────────────────────────────
+  # Python 大列表排序基准
+  # gRPC 默认端口: 50064
+  python_list:
+    <<: *common
+    container_name: python_list
+    image: python_list:latest
+    cpuset: "0"
+    mem_limit: 512m
+    environment:
+      - GRPC_PORT=50064
+    ports:
+      - "50064:50064"
+    labels:
+      sabre.benchmark: "python_list"
